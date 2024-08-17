@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 
 import styles from "./App.module.css";
+import { Player } from "./libs/game/Player";
+import { Enemy } from "./libs/game/Enemy";
 
 export const App = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -25,25 +27,20 @@ export const App = () => {
       frame: number;
     };
 
-    let player: Entity = {
-      x: 100,
-      y: 100,
-      width: 50,
-      height: 50,
-      color: "#f00",
-      frame: 0,
-    };
-    let enemies: Entity[] = [];
+    let player = new Player(100, 100, 50, 50, "#0f0");
+
+    let enemies: Enemy[] = [];
 
     for (let i = 0; i < 10; i++) {
-      enemies.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        width: 50,
-        height: 50,
-        color: "#00f",
-        frame: 0,
-      });
+      enemies.push(
+        new Enemy(
+          Math.random() * canvas.width,
+          Math.random() * canvas.height,
+          50,
+          50,
+          "#00f"
+        )
+      );
     }
 
     const speed = 5;
@@ -93,50 +90,24 @@ export const App = () => {
       }
 
       function playing() {
-        // 플레이어 이동
-        if (keys.left) player.x -= speed;
-        if (keys.right) player.x += speed;
-        if (keys.up) player.y -= speed;
-        if (keys.down) player.y += speed;
+        player.update(keys, speed);
+        player.draw(ctx);
 
         enemies.forEach((enemy) => {
-          if (checkCollision(player, enemy)) {
+          if (player.isCollide(enemy)) {
             enemy.color = "#f00";
           } else {
             enemy.color = "#00f";
           }
 
-          // 적 그리기
-          ctx.fillStyle = enemy.color;
-          ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+          enemy.update();
+          enemy.draw(ctx);
         });
-
-        // 애니메이션 프레임 업데이트
-        player.frame += 1;
-        if (player.frame % 20 < 10) {
-          player.color = "#f00";
-        } else {
-          player.color = "#ff0";
-        }
-
-        // 플레이어 그리기
-        ctx.fillStyle = player.color;
-        ctx.fillRect(player.x, player.y, player.width, player.height);
       }
     }
 
     // RUN
     loop();
-
-    function checkCollision(a: Entity, b: Entity) {
-      // AABB 충돌 검사
-      return (
-        a.x < b.x + b.width &&
-        a.x + a.width > b.x &&
-        a.y < b.y + b.height &&
-        a.y + a.height > b.y
-      );
-    }
 
     function handleEnterKey(e: KeyboardEvent) {
       if (e.key === "Enter") {
