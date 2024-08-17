@@ -55,11 +55,97 @@ export const App = () => {
       down: false,
     };
 
+    let gameState = "menu";
+
+    let isEventListnerAdded = false;
+
     const abort = new AbortController();
 
-    document.addEventListener(
-      "keydown",
-      (e) => {
+    function loop() {
+      requestAnimationFrame(loop);
+
+      // 캔버스 초기화 (배경을 검정색으로 채우기)
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (gameState === "menu") {
+        menu();
+      } else if (gameState === "playing") {
+        playing();
+      }
+
+      function menu() {
+        ctx.fillStyle = "#fff";
+        ctx.font = "48px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          "Press Enter to Start",
+          canvas.width / 2,
+          canvas.height / 2
+        );
+
+        if (!isEventListnerAdded) {
+          document.addEventListener("keydown", handleEnterKey, {
+            signal: abort.signal,
+          });
+          isEventListnerAdded = true;
+        }
+      }
+
+      function playing() {
+        // 플레이어 이동
+        if (keys.left) player.x -= speed;
+        if (keys.right) player.x += speed;
+        if (keys.up) player.y -= speed;
+        if (keys.down) player.y += speed;
+
+        enemies.forEach((enemy) => {
+          if (checkCollision(player, enemy)) {
+            enemy.color = "#f00";
+          } else {
+            enemy.color = "#00f";
+          }
+
+          // 적 그리기
+          ctx.fillStyle = enemy.color;
+          ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        });
+
+        // 애니메이션 프레임 업데이트
+        player.frame += 1;
+        if (player.frame % 20 < 10) {
+          player.color = "#f00";
+        } else {
+          player.color = "#ff0";
+        }
+
+        // 플레이어 그리기
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+      }
+    }
+
+    // RUN
+    loop();
+
+    function checkCollision(a: Entity, b: Entity) {
+      // AABB 충돌 검사
+      return (
+        a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y
+      );
+    }
+
+    function handleEnterKey(e: KeyboardEvent) {
+      if (e.key === "Enter") {
+        startPlaying();
+      }
+    }
+
+    function handlePlayingKeys(e: KeyboardEvent) {
+      if (e.type === "keydown") {
         if (e.key === "ArrowLeft") {
           keys.left = true;
         }
@@ -72,13 +158,7 @@ export const App = () => {
         if (e.key === "ArrowDown") {
           keys.down = true;
         }
-      },
-      { signal: abort.signal }
-    );
-
-    document.addEventListener(
-      "keyup",
-      (e) => {
+      } else if (e.type === "keyup") {
         if (e.key === "ArrowLeft") {
           keys.left = false;
         }
@@ -91,61 +171,28 @@ export const App = () => {
         if (e.key === "ArrowDown") {
           keys.down = false;
         }
-      },
-      {
+      }
+    }
+
+    function startMenu() {
+      gameState = "menu";
+      document.addEventListener("keydown", handleEnterKey, {
         signal: abort.signal,
-      }
-    );
-
-    function loop() {
-      requestAnimationFrame(loop);
-
-      // 캔버스 초기화 (배경을 검정색으로 채우기)
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // 플레이어 이동
-      if (keys.left) player.x -= speed;
-      if (keys.right) player.x += speed;
-      if (keys.up) player.y -= speed;
-      if (keys.down) player.y += speed;
-
-      enemies.forEach((enemy) => {
-        if (checkCollision(player, enemy)) {
-          enemy.color = "#f00";
-        } else {
-          enemy.color = "#00f";
-        }
-
-        // 적 그리기
-        ctx.fillStyle = enemy.color;
-        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
       });
-
-      // 애니메이션 프레임 업데이트
-      player.frame += 1;
-      if (player.frame % 20 < 10) {
-        player.color = "#f00";
-      } else {
-        player.color = "#ff0";
-      }
-
-      // 플레이어 그리기
-      ctx.fillStyle = player.color;
-      ctx.fillRect(player.x, player.y, player.width, player.height);
     }
 
-    loop();
-
-    function checkCollision(a: Entity, b: Entity) {
-      // AABB 충돌 검사
-      return (
-        a.x < b.x + b.width &&
-        a.x + a.width > b.x &&
-        a.y < b.y + b.height &&
-        a.y + a.height > b.y
-      );
+    function startPlaying() {
+      gameState = "playing";
+      document.removeEventListener("keydown", handleEnterKey);
+      document.addEventListener("keydown", handlePlayingKeys, {
+        signal: abort.signal,
+      });
+      document.addEventListener("keyup", handlePlayingKeys, {
+        signal: abort.signal,
+      });
     }
+
+    startMenu();
 
     return () => {
       // cleanup
