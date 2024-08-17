@@ -21,10 +21,26 @@ export const App = () => {
       y: number;
       width: number;
       height: number;
+      color: string;
+      frame: number;
     };
 
-    let player: Entity = { x: 100, y: 100, width: 50, height: 50 };
-    let enemy: Entity = { x: 300, y: 300, width: 50, height: 50 };
+    let player: Entity = {
+      x: 100,
+      y: 100,
+      width: 50,
+      height: 50,
+      color: "#f00",
+      frame: 0,
+    };
+    let enemy: Entity = {
+      x: 300,
+      y: 300,
+      width: 50,
+      height: 50,
+      color: "#00f",
+      frame: 0,
+    };
     const speed = 5;
 
     const keys = {
@@ -89,17 +105,26 @@ export const App = () => {
       if (keys.up) player.y -= speed;
       if (keys.down) player.y += speed;
 
-      if (checkCollision(player, enemy)) {
-        ctx.fillStyle = "#0f0";
+      // 애니메이션 프레임 업데이트
+      player.frame += 1;
+      if (player.frame % 20 < 10) {
+        player.color = "#f00";
       } else {
-        ctx.fillStyle = "#f00";
+        player.color = "#ff0";
       }
 
       // 플레이어 그리기
+      ctx.fillStyle = player.color;
       ctx.fillRect(player.x, player.y, player.width, player.height);
 
+      if (checkCollision(player, enemy)) {
+        enemy.color = "#f00";
+      } else {
+        enemy.color = "#00f";
+      }
+
       // 적 그리기
-      ctx.fillStyle = "#00f";
+      ctx.fillStyle = enemy.color;
       ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
     }
 
