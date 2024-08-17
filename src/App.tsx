@@ -33,14 +33,19 @@ export const App = () => {
       color: "#f00",
       frame: 0,
     };
-    let enemy: Entity = {
-      x: 300,
-      y: 300,
-      width: 50,
-      height: 50,
-      color: "#00f",
-      frame: 0,
-    };
+    let enemies: Entity[] = [];
+
+    for (let i = 0; i < 10; i++) {
+      enemies.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        width: 50,
+        height: 50,
+        color: "#00f",
+        frame: 0,
+      });
+    }
+
     const speed = 5;
 
     const keys = {
@@ -105,6 +110,18 @@ export const App = () => {
       if (keys.up) player.y -= speed;
       if (keys.down) player.y += speed;
 
+      enemies.forEach((enemy) => {
+        if (checkCollision(player, enemy)) {
+          enemy.color = "#f00";
+        } else {
+          enemy.color = "#00f";
+        }
+
+        // 적 그리기
+        ctx.fillStyle = enemy.color;
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+      });
+
       // 애니메이션 프레임 업데이트
       player.frame += 1;
       if (player.frame % 20 < 10) {
@@ -116,16 +133,6 @@ export const App = () => {
       // 플레이어 그리기
       ctx.fillStyle = player.color;
       ctx.fillRect(player.x, player.y, player.width, player.height);
-
-      if (checkCollision(player, enemy)) {
-        enemy.color = "#f00";
-      } else {
-        enemy.color = "#00f";
-      }
-
-      // 적 그리기
-      ctx.fillStyle = enemy.color;
-      ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
     }
 
     loop();
