@@ -54,8 +54,6 @@ export const App = () => {
 
     let gameState = "menu";
 
-    let isEventListnerAdded = false;
-
     const abort = new AbortController();
 
     function loop() {
@@ -80,13 +78,6 @@ export const App = () => {
           canvas.width / 2,
           canvas.height / 2
         );
-
-        if (!isEventListnerAdded) {
-          document.addEventListener("keydown", handleEnterKey, {
-            signal: abort.signal,
-          });
-          isEventListnerAdded = true;
-        }
       }
 
       function playing() {
