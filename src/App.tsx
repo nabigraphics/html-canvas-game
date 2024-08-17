@@ -18,33 +18,15 @@ export const App = () => {
     canvas.width = 800;
     canvas.height = 600;
 
-    type Entity = {
-      x: number;
-      y: number;
-      width: number;
-      height: number;
-      color: string;
-      frame: number;
-    };
-
-    let player = new Player(100, 100, 50, 50, "#0f0");
-
-    let enemies: Enemy[] = [];
-
-    for (let i = 0; i < 10; i++) {
-      enemies.push(
-        new Enemy(
-          Math.random() * canvas.width,
-          Math.random() * canvas.height,
-          50,
-          50,
-          "#00f"
-        )
-      );
-    }
-
     const speed = 5;
     let score = 0;
+    let level = 1;
+    let enemySpeed = 1;
+
+    let player = new Player(100, 100, 50, 50, "#0f0");
+    let enemies: Enemy[] = [];
+
+    initEnemies();
 
     const keys = {
       left: false,
@@ -73,8 +55,9 @@ export const App = () => {
       }
     }
 
-    // RUN
+    // 초기 메뉴 화면 표시
     startMenu();
+    // 게임 루프 시작
     loop();
 
     function handleEnterKey(e: KeyboardEvent) {
@@ -131,6 +114,24 @@ export const App = () => {
       });
     }
 
+    function startGameOver() {
+      gameState = "gameOver";
+      document.removeEventListener("keydown", handlePlayingKeys);
+      document.removeEventListener("keyup", handlePlayingKeys);
+      document.addEventListener(
+        "keydown",
+        (e) => {
+          if (e.key === "Enter") {
+            resetGame();
+          }
+        },
+        {
+          signal: abort.signal,
+          once: true,
+        }
+      );
+    }
+
     function menu() {
       ctx.fillStyle = "#fff";
       ctx.font = "48px sans-serif";
@@ -139,6 +140,11 @@ export const App = () => {
     }
 
     function playing() {
+      // 적의 속도를 레벨에 따라 증가
+      if (score % 500 === 0 && score > 0) {
+        increaseDifficulty();
+      }
+
       // 플레이어 업데이트 및 그리기
       player.update(keys, speed);
       player.draw(ctx);
@@ -150,7 +156,7 @@ export const App = () => {
 
         if (player.isCollide(enemy)) {
           enemy.color = "#f00";
-          gameState = "gameOver";
+          startGameOver();
         }
       });
 
@@ -171,19 +177,29 @@ export const App = () => {
         canvas.width / 2,
         canvas.height / 2 + 50
       );
+    }
 
-      document.addEventListener(
-        "keydown",
-        (e) => {
-          if (e.key === "Enter") {
-            resetGame();
-          }
-        },
-        {
-          signal: abort.signal,
-          once: true,
-        }
-      );
+    function increaseDifficulty() {
+      level += 1;
+      enemySpeed += 0.5;
+
+      enemies.forEach((enemy) => {
+        enemy.setSpeed(enemySpeed);
+      });
+
+      for (let i = 0; i < level; i++) {
+        enemies.push(
+          new Enemy(
+            Math.random() * canvas.width,
+            Math.random() * canvas.height,
+            50,
+            50,
+            "#00f",
+            enemySpeed,
+            canvas
+          )
+        );
+      }
     }
 
     function drawScore() {
@@ -195,16 +211,32 @@ export const App = () => {
 
     function resetGame() {
       score = 0;
+      level = 1;
+      enemySpeed = 1;
+
       player.x = 100;
       player.y = 100;
 
-      enemies.forEach((enemy) => {
-        enemy.x = Math.random() * canvas.width;
-        enemy.y = Math.random() * canvas.height;
-        enemy.color = "#00f";
-      });
+      enemies = [];
+      initEnemies();
 
       startPlaying();
+    }
+
+    function initEnemies() {
+      for (let i = 0; i < 5; i++) {
+        enemies.push(
+          new Enemy(
+            Math.random() * canvas.width,
+            Math.random() * canvas.height,
+            50,
+            50,
+            "#00f",
+            enemySpeed,
+            canvas
+          )
+        );
+      }
     }
 
     return () => {
