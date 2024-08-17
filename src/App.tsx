@@ -44,6 +44,7 @@ export const App = () => {
     }
 
     const speed = 5;
+    let score = 0;
 
     const keys = {
       left: false,
@@ -52,7 +53,7 @@ export const App = () => {
       down: false,
     };
 
-    let gameState = "menu";
+    let gameState: "menu" | "playing" | "gameOver" = "menu";
 
     const abort = new AbortController();
 
@@ -67,37 +68,13 @@ export const App = () => {
         menu();
       } else if (gameState === "playing") {
         playing();
-      }
-
-      function menu() {
-        ctx.fillStyle = "#fff";
-        ctx.font = "48px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText(
-          "Press Enter to Start",
-          canvas.width / 2,
-          canvas.height / 2
-        );
-      }
-
-      function playing() {
-        player.update(keys, speed);
-        player.draw(ctx);
-
-        enemies.forEach((enemy) => {
-          if (player.isCollide(enemy)) {
-            enemy.color = "#f00";
-          } else {
-            enemy.color = "#00f";
-          }
-
-          enemy.update();
-          enemy.draw(ctx);
-        });
+      } else if (gameState === "gameOver") {
+        gameOver();
       }
     }
 
     // RUN
+    startMenu();
     loop();
 
     function handleEnterKey(e: KeyboardEvent) {
@@ -154,7 +131,81 @@ export const App = () => {
       });
     }
 
-    startMenu();
+    function menu() {
+      ctx.fillStyle = "#fff";
+      ctx.font = "48px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Press Enter to Start", canvas.width / 2, canvas.height / 2);
+    }
+
+    function playing() {
+      // 플레이어 업데이트 및 그리기
+      player.update(keys, speed);
+      player.draw(ctx);
+
+      // 적 업데이트 및 그리기
+      enemies.forEach((enemy) => {
+        enemy.update();
+        enemy.draw(ctx);
+
+        if (player.isCollide(enemy)) {
+          enemy.color = "#f00";
+          gameState = "gameOver";
+        }
+      });
+
+      // 점수 그리기
+      drawScore();
+
+      score += 1;
+    }
+
+    function gameOver() {
+      ctx.fillStyle = "#fff";
+      ctx.font = "48px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Game Over", canvas.width / 2, canvas.height / 2);
+      ctx.font = "24px sans-serif";
+      ctx.fillText(
+        "Press Enter to Restart",
+        canvas.width / 2,
+        canvas.height / 2 + 50
+      );
+
+      document.addEventListener(
+        "keydown",
+        (e) => {
+          if (e.key === "Enter") {
+            resetGame();
+          }
+        },
+        {
+          signal: abort.signal,
+          once: true,
+        }
+      );
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "#fff";
+      ctx.font = "24px sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText(`Score: ${score}`, 10, 30);
+    }
+
+    function resetGame() {
+      score = 0;
+      player.x = 100;
+      player.y = 100;
+
+      enemies.forEach((enemy) => {
+        enemy.x = Math.random() * canvas.width;
+        enemy.y = Math.random() * canvas.height;
+        enemy.color = "#00f";
+      });
+
+      startPlaying();
+    }
 
     return () => {
       // cleanup
