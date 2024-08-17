@@ -16,8 +16,15 @@ export const App = () => {
     canvas.width = 800;
     canvas.height = 600;
 
-    let x = 0;
-    let y = 0;
+    type Entity = {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+
+    let player: Entity = { x: 100, y: 100, width: 50, height: 50 };
+    let enemy: Entity = { x: 300, y: 300, width: 50, height: 50 };
     const speed = 5;
 
     const keys = {
@@ -76,18 +83,37 @@ export const App = () => {
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 키보드 입력에 따라 x, y 좌표 변경
-      if (keys.left) x -= speed;
-      if (keys.right) x += speed;
-      if (keys.up) y -= speed;
-      if (keys.down) y += speed;
+      // 플레이어 이동
+      if (keys.left) player.x -= speed;
+      if (keys.right) player.x += speed;
+      if (keys.up) player.y -= speed;
+      if (keys.down) player.y += speed;
 
-      // 사각형 그리기
-      ctx.fillStyle = "#f00";
-      ctx.fillRect(x, y, 50, 50);
+      if (checkCollision(player, enemy)) {
+        ctx.fillStyle = "#0f0";
+      } else {
+        ctx.fillStyle = "#f00";
+      }
+
+      // 플레이어 그리기
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+
+      // 적 그리기
+      ctx.fillStyle = "#00f";
+      ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
     }
 
     loop();
+
+    function checkCollision(a: Entity, b: Entity) {
+      // AABB 충돌 검사
+      return (
+        a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y
+      );
+    }
 
     return () => {
       // cleanup
