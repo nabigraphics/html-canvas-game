@@ -24,8 +24,9 @@ export class GameObject {
     ctx.fillRect(this.x, this.y, this.width, this.height);
   }
 
-  // typescript method overloading
   update(...args: any[]): void {}
+
+  destory(...args: any[]) {}
 
   isCollide(other: GameObject) {
     return (
