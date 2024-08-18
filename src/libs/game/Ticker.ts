@@ -12,6 +12,8 @@ export class Ticker {
   }
 
   start() {
+    if (this.isRunning) return;
+
     this.isRunning = true;
     this.lastTime = performance.now();
     const tick = (currentTime: number) => {

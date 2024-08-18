@@ -6,11 +6,14 @@ export interface GameEngineConfig {
   defaultScene?: Scene;
 }
 
+export type GameEngineCurrentState = "running" | "paused" | "stopped";
+
 export class GameEngine {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private ticker: Ticker = new Ticker();
-  private currentScene?: Scene;
+  private currentScene: Scene | null;
+  private currentState: GameEngineCurrentState = "stopped";
 
   constructor(config: GameEngineConfig) {
     this.canvas = config.canvas;
@@ -19,11 +22,71 @@ export class GameEngine {
     this.canvas.width = 800;
     this.canvas.height = 600;
 
-    this.currentScene = config.defaultScene;
+    this.currentScene = config.defaultScene ?? null;
 
     if (this.currentScene) {
       this.currentScene.enter();
     }
+  }
+
+  // 게임 루프
+  run() {
+    if (this.currentState === "running" || this.currentState === "paused") {
+      return;
+    }
+
+    this.currentState = "running";
+    this.ticker.add((deltaTime: number) => this.update(deltaTime));
+    this.ticker.add(() => this.render());
+    this.ticker.start();
+  }
+
+  // 일시정지
+  pause() {
+    if (this.currentState !== "running") {
+      return;
+    }
+    this.currentState = "paused";
+    this.ticker.stop();
+  }
+
+  // 재개
+  resume() {
+    if (this.currentState !== "paused") {
+      return;
+    }
+    this.currentState = "running";
+    this.ticker.start();
+  }
+
+  stop() {
+    if (this.currentState === "stopped") {
+      return;
+    }
+    this.currentState = "stopped";
+    this.ticker.stop();
+    if (this.currentScene) {
+      this.currentScene.exit();
+    }
+  }
+
+  private update(deltaTime: number) {
+    if (this.currentState === "running" && this.currentScene) {
+      this.currentScene.update(deltaTime);
+    }
+  }
+
+  // 화면 렌더링
+  private render() {
+    if (this.currentState === "running" && this.currentScene) {
+      this.currentScene.render(this.ctx);
+    }
+  }
+
+  // destroy
+  destroy() {
+    this.stop();
+    this.currentScene = null;
   }
 
   changeScene(scene: Scene) {
@@ -35,40 +98,7 @@ export class GameEngine {
     this.currentScene.enter();
   }
 
-  // 게임 루프
-  run() {
-    this.ticker.add((deltaTime: number) => this.update(deltaTime));
-    this.ticker.add(() => this.render());
-    this.ticker.start();
-  }
-
-  update(deltaTime: number) {
-    if (this.currentScene) {
-      this.currentScene.update(deltaTime);
-    }
-  }
-
-  // 화면 렌더링
-  render() {
-    if (this.currentScene) {
-      this.currentScene.render(this.ctx);
-    }
-  }
-
-  // destroy
-  destroy() {
-    this.ticker.stop();
-
-    if (this.currentScene) {
-      this.currentScene.exit();
-    }
-  }
-
   getCanvas() {
     return this.canvas;
-  }
-
-  getCurrentScene() {
-    return this.currentScene;
   }
 }
