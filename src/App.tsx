@@ -96,6 +96,12 @@ export const App = () => {
       }
     }
 
+    function handleResetGame(e: KeyboardEvent) {
+      if (e.key === "Enter") {
+        resetGame();
+      }
+    }
+
     function startMenu() {
       gameState = "menu";
       document.addEventListener("keydown", handleEnterKey, {
@@ -118,18 +124,9 @@ export const App = () => {
       gameState = "gameOver";
       document.removeEventListener("keydown", handlePlayingKeys);
       document.removeEventListener("keyup", handlePlayingKeys);
-      document.addEventListener(
-        "keydown",
-        (e) => {
-          if (e.key === "Enter") {
-            resetGame();
-          }
-        },
-        {
-          signal: abort.signal,
-          once: true,
-        }
-      );
+      document.addEventListener("keydown", handleResetGame, {
+        signal: abort.signal,
+      });
     }
 
     function menu() {
@@ -218,6 +215,11 @@ export const App = () => {
       player.y = 100;
 
       enemies = [];
+
+      keys.left = false;
+      keys.right = false;
+      keys.up = false;
+      keys.down = false;
       initEnemies();
 
       startPlaying();
