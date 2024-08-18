@@ -1,6 +1,7 @@
 import { GameEngine } from "../GameEngine";
 import { InputManager } from "../InputManager";
 import { Scene } from "../Scene";
+import { clearCanvas } from "../utils/clearCanvas";
 
 import { PlayingScene } from "./PlayingScene";
 
@@ -27,10 +28,7 @@ export class GameOverScene extends Scene {
   }
 
   render(ctx: CanvasRenderingContext2D) {
-    // 캔버스 초기화 (배경을 검정색으로 채우기)
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    clearCanvas(ctx, this.canvas);
 
     ctx.fillStyle = "#fff";
     ctx.font = "48px sans-serif";

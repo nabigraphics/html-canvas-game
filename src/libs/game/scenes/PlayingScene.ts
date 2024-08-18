@@ -2,6 +2,7 @@ import { Enemy } from "../Enemy";
 import { GameEngine } from "../GameEngine";
 import { Player } from "../Player";
 import { Scene } from "../Scene";
+import { clearCanvas } from "../utils/clearCanvas";
 
 import { GameOverScene } from "./GameOverScene";
 
@@ -51,10 +52,7 @@ export class PlayingScene extends Scene {
   }
 
   render(ctx: CanvasRenderingContext2D) {
-    // 캔버스 초기화 (배경을 검정색으로 채우기)
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    clearCanvas(ctx, this.canvas);
 
     this.player.render(ctx);
     this.enemies.forEach((enemy) => {
