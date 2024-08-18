@@ -1,30 +1,5 @@
 import { GameObject } from "./GameObject";
-
-class InputManager {
-  private keys: { [key: string]: boolean } = {};
-
-  constructor() {
-    window.addEventListener("keydown", this.onKeyDown.bind(this));
-    window.addEventListener("keyup", this.onKeyUp.bind(this));
-  }
-
-  onKeyDown(event: KeyboardEvent) {
-    this.keys[event.code] = true;
-  }
-
-  onKeyUp(event: KeyboardEvent) {
-    this.keys[event.code] = false;
-  }
-
-  isKeyDown(key: string) {
-    return this.keys[key] || false;
-  }
-
-  cleanup() {
-    window.removeEventListener("keydown", this.onKeyDown);
-    window.removeEventListener("keyup", this.onKeyUp);
-  }
-}
+import { InputManager } from "./InputManager";
 
 export class Player extends GameObject {
   // TODO: 생성자에서 InputManager를 주입 받을지 고민
@@ -59,7 +34,7 @@ export class Player extends GameObject {
     }
   }
 
-  destory() {
-    this.inputManager.cleanup();
+  destroy() {
+    this.inputManager.destroy();
   }
 }

@@ -32,6 +32,8 @@ export class Enemy extends GameObject {
       this.y = this.canvas.height - this.height;
   }
 
+  destroy() {}
+
   setSpeed(speed: number) {
     this.speed = speed;
   }

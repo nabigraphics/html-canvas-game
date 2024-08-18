@@ -19,14 +19,14 @@ export class GameObject {
     this.color = color;
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  render(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x, this.y, this.width, this.height);
   }
 
-  update(...args: any[]): void {}
+  update(...args: any[]) {}
 
-  destory(...args: any[]) {}
+  destroy(...args: any[]) {}
 
   isCollide(other: GameObject) {
     return (
